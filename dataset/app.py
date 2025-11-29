@@ -1,43 +1,20 @@
-import os
+import streamlit as st
 import numpy as np
 from PIL import Image
-import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from keras.models import load_model
 
-DATASET_PATH = "dataset"
+st.title("Clasificador de Perros y Gatos 🐶😺")
 
-# Generador de datos
-datagen = ImageDataGenerator(rescale=1/255.0)
+# -------------------
+# Cargar modelo CNN ya entrenado
+# -------------------
+MODEL_PATH = "modelo_perros_gatos_cnn.keras"
+model = load_model(MODEL_PATH)
+st.success("Modelo cargado ✅")
 
-train_generator = datagen.flow_from_directory(
-    DATASET_PATH,
-    target_size=(64, 64),
-    color_mode="rgb",
-    batch_size=4,
-    class_mode="binary"
-)
-
-# Modelo CNN
-model = Sequential([
-    Conv2D(32, (3,3), activation='relu', input_shape=(64,64,3)),
-    MaxPooling2D(2,2),
-    Conv2D(64, (3,3), activation='relu'),
-    MaxPooling2D(2,2),
-    Flatten(),
-    Dense(128, activation='relu'),
-    Dropout(0.3),
-    Dense(1, activation='sigmoid')
-])
-
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-model.fit(train_generator, epochs=15)
-
-model.save("modelo_perros_gatos_cnn.keras")
-
-# Predicción
+# -------------------
+# Función de predicción
+# -------------------
 def predecir(ruta):
     img = Image.open(ruta).resize((64,64)).convert("RGB")
     img = np.array(img) / 255.0
@@ -45,4 +22,19 @@ def predecir(ruta):
     pred = model.predict(img)[0][0]
     return "Gato 😺" if pred > 0.5 else "Perro 🐶"
 
-print(predecir("dataset/gatos/cat.4001.jpg"))
+# -------------------
+# Interfaz de Streamlit
+# -------------------
+uploaded_file = st.file_uploader("Sube una imagen de un perro o un gato", type=["jpg", "png", "jpeg"])
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Imagen subida", use_column_width=True)
+    
+    # Guardar temporalmente
+    image_path = "temp.jpg"
+    image.save(image_path)
+    
+    # Predicción
+    resultado = predecir(image_path)
+    st.markdown(f"### Predicción: {resultado}")
