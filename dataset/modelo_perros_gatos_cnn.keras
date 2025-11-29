@@ -1,2 +1,0 @@
-if os.path.exists(MODEL_PATH) and os.path.getsize(MODEL_PATH) > 0:
-    model = load_model(MODEL_PATH)
