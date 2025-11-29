@@ -8,14 +8,8 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
 st.title("Clasificador de Perros y Gatos 🐶😺")
 
-# -------------------
-# Rutas
-# -------------------
-DATASET_PATH = "dataset"  # Dentro deben estar carpetas 'perros' y 'gatos'
+DATASET_PATH = "dataset"  # Debe tener subcarpetas 'perros' y 'gatos'
 
-# -------------------
-# Entrenamiento de la CNN
-# -------------------
 def entrenar_modelo():
     st.info("Entrenando CNN desde cero... Esto puede tardar varios minutos ⏳")
 
@@ -29,7 +23,7 @@ def entrenar_modelo():
     train_gen = datagen.flow_from_directory(
         DATASET_PATH,
         target_size=(64,64),
-        batch_size=32,
+        batch_size=16,
         class_mode='binary',
         subset='training'
     )
@@ -37,66 +31,40 @@ def entrenar_modelo():
     val_gen = datagen.flow_from_directory(
         DATASET_PATH,
         target_size=(64,64),
-        batch_size=32,
+        batch_size=16,
         class_mode='binary',
         subset='validation'
     )
 
     model = Sequential([
-        Conv2D(32, (3,3), activation='relu', input_shape=(64,64,3)),
+        Conv2D(16, (3,3), activation='relu', input_shape=(64,64,3)),
         MaxPooling2D(2,2),
-        Conv2D(64, (3,3), activation='relu'),
+        Conv2D(32, (3,3), activation='relu'),
         MaxPooling2D(2,2),
         Flatten(),
-        Dense(128, activation='relu'),
+        Dense(64, activation='relu'),
         Dense(1, activation='sigmoid')
     ])
 
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    model.fit(train_gen, validation_data=val_gen, epochs=10)
+    model.fit(train_gen, validation_data=val_gen, epochs=3)  # menos epochs para cloud
 
     st.success("Modelo entrenado ✅")
     return model
 
-# -------------------
-# Entrenar modelo siempre desde cero
-# -------------------
 model = entrenar_modelo()
 
-# -------------------
-# Función de predicción
-# -------------------
 def predecir(ruta):
     img = Image.open(ruta).resize((64,64)).convert("RGB")
-    img = np.array(img) / 255.0
+    img = np.array(img)/255.0
     img = np.expand_dims(img, axis=0)
     pred = model.predict(img)[0][0]
-    return "Gato 😺" if pred > 0.5 else "Perro 🐶"
+    return "Gato 😺" if pred>0.5 else "Perro 🐶"
 
-# -------------------
-# Interfaz Streamlit
-# -------------------
 st.header("Sube una imagen para predecir")
-uploaded_file = st.file_uploader("Sube una imagen de un perro o un gato", type=["jpg","jpeg","png"])
+uploaded_file = st.file_uploader("Sube una imagen de un perro o gato", type=["jpg","jpeg","png"])
 
-if uploaded_file is not None:
+if uploaded_file:
     image = Image.open(uploaded_file)
     st.image(image, caption="Imagen subida", use_column_width=True)
-    resultado = predecir(uploaded_file)
-    st.markdown(f"### Predicción: {resultado}")
-
-# -------------------
-# Predicción de todas las imágenes en carpetas
-# -------------------
-st.header("Predicciones de tus carpetas locales")
-if st.button("Predecir todas las imágenes de perros y gatos"):
-    carpetas = {"Perros": os.path.join(DATASET_PATH, "perros"),
-                "Gatos": os.path.join(DATASET_PATH, "gatos")}
-    
-    for etiqueta, carpeta in carpetas.items():
-        st.subheader(f"{etiqueta}")
-        for archivo in os.listdir(carpeta):
-            if archivo.lower().endswith((".png", ".jpg", ".jpeg")):
-                ruta = os.path.join(carpeta, archivo)
-                pred = predecir(ruta)
-                st.image(ruta, width=150, caption=f"{archivo} -> {pred}")
+    st.markdown(f"### Predicción: {predecir(uploaded_file)}")
