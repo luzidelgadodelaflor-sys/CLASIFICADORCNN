@@ -23,7 +23,7 @@ def predecir(ruta):
     img = np.array(img)/255.0
     img = np.expand_dims(img, axis=0)
     pred = model.predict(img, verbose=0)[0][0]
-    return "Gato 😺" if pred>0.5 else "Perro 🐶"
+    return "Perro 🐶" if pred>0.5 else "Gato 😺"
 
 # -------------------
 # Interfaz
@@ -36,4 +36,5 @@ if uploaded_file:
     st.image(image, caption="Imagen subida", use_column_width=True)
     resultado = predecir(uploaded_file)
     st.markdown(f"### Predicción: {resultado}")
+
 
