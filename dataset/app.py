@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 st.title("Clasificador de Perros y Gatos 🐶😺")
 
@@ -38,3 +38,4 @@ if uploaded_file is not None:
     # Predicción
     resultado = predecir(image_path)
     st.markdown(f"### Predicción: {resultado}")
+
