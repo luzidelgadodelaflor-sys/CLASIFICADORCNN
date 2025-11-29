@@ -8,7 +8,7 @@ st.title("Clasificador de Perros y Gatos 🐶😺")
 # -------------------
 # Cargar modelo CNN ya entrenado
 # -------------------
-MODEL_PATH = "modelo_perros_gatos_cnn.keras"
+MODEL_PATH = "dataset/modelo_perros_gatos_cnn.keras"
 model = load_model(MODEL_PATH)
 st.success("Modelo cargado ✅")
 
@@ -38,4 +38,5 @@ if uploaded_file is not None:
     # Predicción
     resultado = predecir(image_path)
     st.markdown(f"### Predicción: {resultado}")
+
 
