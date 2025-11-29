@@ -1,14 +1,14 @@
 import os
-import keras
-from keras.src.legacy.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 import numpy as np
 from PIL import Image
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 
 DATASET_PATH = "dataset"
 
-# Generador
+# Generador de datos
 datagen = ImageDataGenerator(rescale=1/255.0)
 
 train_generator = datagen.flow_from_directory(
@@ -19,7 +19,7 @@ train_generator = datagen.flow_from_directory(
     class_mode="binary"
 )
 
-# Modelo
+# Modelo CNN
 model = Sequential([
     Conv2D(32, (3,3), activation='relu', input_shape=(64,64,3)),
     MaxPooling2D(2,2),
