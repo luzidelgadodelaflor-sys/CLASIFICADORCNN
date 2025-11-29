@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
 st.title("Clasificador de Perros y Gatos 🐶😺")
@@ -11,11 +11,10 @@ st.title("Clasificador de Perros y Gatos 🐶😺")
 # -------------------
 # Rutas
 # -------------------
-MODEL_PATH = "dataset/modelo_perros_gatos_cnn.keras"
-DATASET_PATH = "dataset"
+DATASET_PATH = "dataset"  # Dentro deben estar carpetas 'perros' y 'gatos'
 
 # -------------------
-# Función de creación y entrenamiento de la CNN
+# Entrenamiento de la CNN
 # -------------------
 def entrenar_modelo():
     st.info("Entrenando CNN desde cero... Esto puede tardar varios minutos ⏳")
@@ -54,21 +53,15 @@ def entrenar_modelo():
     ])
 
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
     model.fit(train_gen, validation_data=val_gen, epochs=10)
 
-    model.save(MODEL_PATH)
-    st.success("Modelo entrenado y guardado ✅")
+    st.success("Modelo entrenado ✅")
     return model
 
 # -------------------
-# Cargar modelo si existe, sino entrenar
+# Entrenar modelo siempre desde cero
 # -------------------
-if os.path.exists(MODEL_PATH) and os.path.getsize(MODEL_PATH) > 0:
-    model = load_model(MODEL_PATH)
-    st.success("Modelo cargado ✅")
-else:
-    model = entrenar_modelo()
+model = entrenar_modelo()
 
 # -------------------
 # Función de predicción
@@ -103,6 +96,7 @@ if st.button("Predecir todas las imágenes de perros y gatos"):
     for etiqueta, carpeta in carpetas.items():
         st.subheader(f"{etiqueta}")
         for archivo in os.listdir(carpeta):
-            ruta = os.path.join(carpeta, archivo)
-            pred = predecir(ruta)
-            st.image(ruta, width=150, caption=f"{archivo} -> {pred}")
+            if archivo.lower().endswith((".png", ".jpg", ".jpeg")):
+                ruta = os.path.join(carpeta, archivo)
+                pred = predecir(ruta)
+                st.image(ruta, width=150, caption=f"{archivo} -> {pred}")
